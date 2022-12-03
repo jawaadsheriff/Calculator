@@ -1,8 +1,6 @@
 package org.example;
 
 import org.example.computations.CalculateDouble;
-import org.example.computations.CalculateIntegers;
-import org.example.computations.CalculateLong;
 import org.example.computations.Calculator;
 
 import javax.swing.*;
@@ -22,61 +20,23 @@ public class Main implements ActionListener {
     JPanel jPanel1 = new JPanel(new GridLayout(2,1));
     JPanel jPanel2 = new JPanel(new GridLayout(5,4));
     JButton[] btn = new JButton[10];
-    JButton addButton;
-    JButton subButton;
-    JButton multButton;
-    JButton divButton;
-    JButton decimalButton;
-    JButton equalButton;
-    JButton clearButton;
-    JButton deleteButton;
-    JButton plusMinusButton;
-    JButton moduloButton;
     JTextField jTextField = new JTextField();
     JTextArea jTextArea = new JTextArea();
-    Double result = 0d;
-    Double operand = null;
-    char operator = ' ';
-    char nextOperator = ' ';
-    String calcHistory = "";
+    private Double result = null;
+    private Double operandOne = null;
+    private Double operandTwo= null;
+    private char operator = ' ';
+    private String calcHistory = "";
+    private boolean clearFlag = false;
     int counter = 0;
     public Main(){
         jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         jFrame.setSize(300, 300);
-        for(int i = 0; i < BTN_TEXTS.length; i++){
-            for(int j = 0;j < BTN_TEXTS[i].length; j++){
-                if(BTN_TEXTS[i][j] == "+"){
-                    arrangeOperatorButtons(BTN_TEXTS[i][j], addButton);
-                }
-                else if(BTN_TEXTS[i][j] == "-"){
-                    arrangeOperatorButtons(BTN_TEXTS[i][j], subButton);
-                }
-                else if(BTN_TEXTS[i][j] == "*"){
-                    arrangeOperatorButtons(BTN_TEXTS[i][j], multButton);
-                }
-                else if(BTN_TEXTS[i][j] == "/"){
-                    arrangeOperatorButtons(BTN_TEXTS[i][j], divButton);
-                }
-                else if(BTN_TEXTS[i][j] == "="){
-                    arrangeOperatorButtons(BTN_TEXTS[i][j], equalButton);
-                }
-                else if(BTN_TEXTS[i][j] == "."){
-                    arrangeOperatorButtons(BTN_TEXTS[i][j], decimalButton);
-                }
-                else if(BTN_TEXTS[i][j] == "C"){
-                    arrangeOperatorButtons(BTN_TEXTS[i][j], clearButton);
-                }
-                else if(BTN_TEXTS[i][j] == "DEL"){
-                    arrangeOperatorButtons(BTN_TEXTS[i][j], deleteButton);
-                }
-                else if(BTN_TEXTS[i][j] == "+/-"){
-                    arrangeOperatorButtons(BTN_TEXTS[i][j], plusMinusButton);
-                }
-                else if(BTN_TEXTS[i][j] == "%"){
-                    arrangeOperatorButtons(BTN_TEXTS[i][j], moduloButton);
-                }
-                else{
-                    arrangeNumberButtons(BTN_TEXTS[i][j]);
+        for (String[] btnText : BTN_TEXTS) {
+            for (String s : btnText) {
+                switch (s) {
+                    case "+", "-", "*", "/", "=", ".", "C", "DEL", "+/-", "%" -> arrangeOperatorButtons(s);
+                    default -> arrangeNumberButtons(s);
                 }
             }
         }
@@ -96,13 +56,13 @@ public class Main implements ActionListener {
         btn[index].addActionListener(this);
     }
 
-    public void arrangeOperatorButtons(String buttonText, JButton jbutton){
-        jbutton = new JButton(buttonText);
+    public void arrangeOperatorButtons(String buttonText){
+        JButton jbutton = new JButton(buttonText);
         jPanel2.add(jbutton);
         jbutton.addActionListener(this);
     }
 
-    public void compute(char operator){
+    public void compute(){
         /*if(operator != '='){
             calcHistory += operator;
             jTextField.setText("");
@@ -110,34 +70,34 @@ public class Main implements ActionListener {
         }*/
         //Double operand = Double.parseDouble(operandOne);
         Calculator<Double> doubleObj = new CalculateDouble();
-        switch (this.operator){
-            case '+':
-                result = doubleObj.add(result, operand);
+        switch (operator) {
+            case '+' -> {
+                result = doubleObj.add(operandOne, operandTwo);
+                System.out.println(result);
+            }
+            //operand = null;
+            case '-' -> {
+                result = doubleObj.subtract(operandOne, operandTwo);
                 jTextField.setText(result.toString());
-                operand = null;
-                break;
-            case '-':
-                result = doubleObj.subtract(result, operand);
+            }
+            //operand = null;
+            case '*' -> {
+                result = doubleObj.multiply(operandOne, operandTwo);
                 jTextField.setText(result.toString());
-                operand = null;
-                break;
-            case '*':
-                result = doubleObj.multiply(result,operand);
+            }
+            //operand = null;
+            case '/' -> {
+                result = doubleObj.divide(operandOne, operandTwo);
                 jTextField.setText(result.toString());
-                operand = null;
-                break;
-            case '/':
-                result = doubleObj.divide(result, operand);
-                jTextField.setText(result.toString());
-                operand = null;
-                break;
+            }
+            //operand = null;
         }
     }
 
-    public void checkCounterAndCompute(char operator){
+    public void checkCounterAndCompute(){
         if(counter == 0){
-            result = operand;
-            operand = null;
+            result = operandOne;
+            operandOne = null;
             counter++;
             //calcHistory += operator;
             jTextField.setText("");
@@ -145,65 +105,108 @@ public class Main implements ActionListener {
             System.out.println(result);
         }
         else{
-            compute(operator);
+            compute();
             System.out.println(result);
         }
+    }
+
+    public void setCalcHistory(String text){
+        calcHistory += text;
     }
     @Override
     public void actionPerformed(ActionEvent e) {
         JButton pressedButton = (JButton) e.getSource();
         System.out.println(pressedButton.toString());
-        if(operand != null && operator != ' ' && nextOperator != ' '){
+        String input = pressedButton.getText();
+        /*if(operandOne != null && operator != ' ' && nextOperator != ' '){
             checkCounterAndCompute(operator);
             operator = nextOperator;
             nextOperator = ' ';
+        }*/
+        if(input.equals("+")){
+            String text = jTextField.getText();
+            if(operandOne == null && !text.equals("")){
+                operator = '+';
+                setCalcHistory(text);
+                operandOne = Double.parseDouble(text);
+                setCalcHistory(String.valueOf(operator));
+                jTextArea.setText(calcHistory);
+                jTextField.setText("");
+                //counter++;
+            }
+            else if(operandTwo == null && !text.equals("")){
+                if(result == null){
+                    operandTwo = Double.parseDouble(text);
+                }
+                else{
+                    operandOne = result;
+                    operandTwo = Double.parseDouble(text);
+                }
+                compute();
+                jTextField.setText(result.toString());
+                operandTwo = null;
+                setCalcHistory(text);
+                operator = '+';
+                setCalcHistory(String.valueOf(operator));
+                jTextArea.setText(calcHistory);
+                clearFlag = true;
+            }
         }
-        if(pressedButton.getText().equals("+")){
-            operator = '+';
-            jTextField.setText("");
-            calcHistory += operator;
-            jTextArea.setText(calcHistory);
-        }
-        if(pressedButton.getText().equals("-")){
+        else if(input.equals("-")){
             operator = '-';
             jTextField.setText("");
             calcHistory += operator;
             jTextArea.setText(calcHistory);
         }
-        if(pressedButton.getText().equals("*")){
+        else if(input.equals("*")){
             operator = '*';
             jTextField.setText("");
             calcHistory += operator;
             jTextArea.setText(calcHistory);
         }
-        if(pressedButton.getText().equals("/")){
+        else if(input.equals("/")){
             operator = '/';
             jTextField.setText("");
             calcHistory += operator;
             jTextArea.setText(calcHistory);
         }
-        if(pressedButton.getText() == "="){
+        else if(input.equals("=")){
             //calcHistory += text;
             jTextArea.setText(calcHistory);
-            checkCounterAndCompute('=');
+            checkCounterAndCompute();
             jTextField.setText(result.toString());
         }
-        if(pressedButton.getText() == "C"){
+        else if(input.equals("C")){
             jTextArea.setText("");
             jTextField.setText("");
             result = 0d;
-            operand = null;
+            operandOne = null;
+            operandTwo = null;
             operator = ' ';
             calcHistory = "";
             counter = 0;
         }
-        for(int i = 0; i < 10; i++) {
-            if (pressedButton == btn[i]) {
-                String text = jTextField.getText();
-                calcHistory += pressedButton.getText();
-                text += pressedButton.getText();
+        else if(input.equals(".")){
+            String text = jTextField.getText();
+            if(!text.contains(".")){
+                text += input;
                 jTextField.setText(text);
-                operand = Double.parseDouble(text);
+                setCalcHistory(input);
+            }
+        }
+        else {
+            for (int i = 0; i < 10; i++) {
+                if (clearFlag) {
+                    jTextField.setText("");
+                    clearFlag = false;
+                }
+                if (input.equals(btn[i].getText())) {
+                    String text = jTextField.getText();
+                    text += input;
+                    jTextField.setText(text);
+                    //setCalcHistory(input);
+                    //operand = Double.parseDouble(text);
+                }
             }
         }
     }
@@ -220,13 +223,8 @@ public class Main implements ActionListener {
         System.out.println(doubleObj.divide(18.0, 3.0));*/
         try {
             UIManager.setLookAndFeel("com.formdev.flatlaf.intellijthemes.FlatLightFlatIJTheme");
-        } catch (UnsupportedLookAndFeelException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (InstantiationException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
+        } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException |
+                 IllegalAccessException e) {
             throw new RuntimeException(e);
         }
         new Main();
