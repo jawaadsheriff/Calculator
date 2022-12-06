@@ -27,8 +27,7 @@ public class Main implements ActionListener {
     private Double operandTwo= null;
     private char operator = ' ';
     private String calcHistory = "";
-    private boolean clearFlag = false;
-    int counter = 0;
+    private boolean clearTextFieldFlag = false;
     public Main(){
         jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         jFrame.setSize(300, 300);
@@ -63,63 +62,35 @@ public class Main implements ActionListener {
     }
 
     public void compute(){
-        /*if(operator != '='){
-            calcHistory += operator;
-            jTextField.setText("");
-            jTextArea.setText(calcHistory);
-        }*/
-        //Double operand = Double.parseDouble(operandOne);
         Calculator<Double> doubleObj = new CalculateDouble();
         switch (operator) {
-            case '+' -> {
-                result = doubleObj.add(operandOne, operandTwo);
-                System.out.println(result);
-            }
-            case '-' -> {
-                result = doubleObj.subtract(operandOne, operandTwo);
-                System.out.println(result);
-            }
-            case '*' -> {
-                result = doubleObj.multiply(operandOne, operandTwo);
-                System.out.println(result);
-            }
-            case '/' -> {
-                result = doubleObj.divide(operandOne, operandTwo);
-                System.out.println(result);
-            }
-        }
-    }
-
-    public void checkCounterAndCompute(){
-        if(counter == 0){
-            result = operandOne;
-            operandOne = null;
-            counter++;
-            //calcHistory += operator;
-            jTextField.setText("");
-            //jTextArea.setText(calcHistory);
-            System.out.println(result);
-        }
-        else{
-            compute();
-            System.out.println(result);
+            case '+' -> result = doubleObj.add(operandOne, operandTwo);
+            case '-' -> result = doubleObj.subtract(operandOne, operandTwo);
+            case '*' -> result = doubleObj.multiply(operandOne, operandTwo);
+            case '/' -> result = doubleObj.divide(operandOne, operandTwo);
         }
     }
 
     public void setCalcHistory(String text){
+        calcHistory += text;
+        //System.out.println(calcHistory);
+    }
+
+    public void deleteOperatorInCalcHistory(){
         if (calcHistory.length() > 0){
             String lastCharacter = String.valueOf(calcHistory.charAt(calcHistory.length() - 1));
-            if (lastCharacter.matches("[^0-9]") && text.matches("[^0-9]")) {
+            if (lastCharacter.matches("[^0-9]")) {
                 calcHistory = calcHistory.substring(0, calcHistory.length() - 1);
             }
         }
-        calcHistory += text;
-        System.out.println(calcHistory);
     }
-
     public void performOperation(char clickedOperator){
         String text = jTextField.getText();
-        if(operandOne == null && !text.equals("")){
+        if(operator == ' ' && text.equals("")){
+            operator = clickedOperator;
+            setCalcHistory(String.valueOf(operator));
+        }
+        else if(operandOne == null && !text.equals("")){
             operator = clickedOperator;
             setCalcHistory(text);
             operandOne = Double.parseDouble(text);
@@ -140,20 +111,15 @@ public class Main implements ActionListener {
             operator = clickedOperator;
             setCalcHistory(String.valueOf(operator));
             jTextArea.setText(calcHistory);
-            clearFlag = true;
+            clearTextFieldFlag = true;
         }
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         JButton pressedButton = (JButton) e.getSource();
-        System.out.println(pressedButton.toString());
+        //System.out.println(pressedButton.toString());
         String input = pressedButton.getText();
-        /*if(operandOne != null && operator != ' ' && nextOperator != ' '){
-            checkCounterAndCompute(operator);
-            operator = nextOperator;
-            nextOperator = ' ';
-        }*/
         if(input.equals("+")){
             performOperation('+');
         }
@@ -167,21 +133,24 @@ public class Main implements ActionListener {
             performOperation('/');
         }
         else if(input.equals("=")){
-            //calcHistory += text;
+            performOperation('=');
             jTextArea.setText(calcHistory);
-            checkCounterAndCompute();
             jTextField.setText(result.toString());
+            operandOne = null;
+            operandTwo = null;
+            result = null;
+            operator = ' ';
+            clearTextFieldFlag = false;
         }
         else if(input.equals("C")){
             jTextArea.setText("");
             jTextField.setText("");
-            result = 0d;
+            result = null;
             operandOne = null;
             operandTwo = null;
             operator = ' ';
             calcHistory = "";
-            clearFlag = false;
-            counter = 0;
+            clearTextFieldFlag = false;
         }
         else if(input.equals(".")){
             String text = jTextField.getText();
@@ -191,11 +160,21 @@ public class Main implements ActionListener {
                 setCalcHistory(input);
             }
         }
+        else if(input.equals("DEL")){
+            if(!jTextField.getText().equals("")){
+                jTextField.setText("");
+            }
+            else if(jTextField.getText().equals("")){
+                deleteOperatorInCalcHistory();
+                jTextArea.setText(calcHistory);
+                operator = ' ';
+            }
+        }
         else {
             for (int i = 0; i < 10; i++) {
-                if (clearFlag) {
+                if (clearTextFieldFlag) {
                     jTextField.setText("");
-                    clearFlag = false;
+                    clearTextFieldFlag = false;
                 }
                 if (input.equals(btn[i].getText())) {
                     String text = jTextField.getText();
@@ -207,15 +186,6 @@ public class Main implements ActionListener {
     }
 
     public static void main(String[] args) {
-       /* Calculator<Integer> obj = new CalculateIntegers();
-        Calculator<Long> longObj = new CalculateLong();
-        Calculator<Double> doubleObj = new CalculateDouble();
-        System.out.println(obj.add(10, 20));
-        System.out.println(doubleObj.subtract(20.0, 10.0));
-        System.out.println(longObj.add(10L, 20L));
-        System.out.println(longObj.multiply(10L, 20L));
-        System.out.println(doubleObj.add(10.0, 20.0));
-        System.out.println(doubleObj.divide(18.0, 3.0));*/
         try {
             UIManager.setLookAndFeel("com.formdev.flatlaf.intellijthemes.FlatLightFlatIJTheme");
         } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException |
